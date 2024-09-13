@@ -1,0 +1,1 @@
+﻿public sealed record GetPersonJobBetweenDatesQuery(Person Person, DateTime StartDate, DateTime EndDate) : IRequest<Task<IReadOnlyCollection<Job>>>;

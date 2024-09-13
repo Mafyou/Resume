@@ -1,6 +1,19 @@
-@Resume.API_HostAddress = http://localhost:5122
+@Resume.API_HostAddress = https://localhost:7210
 
-GET {{Resume.API_HostAddress}}/weatherforecast/
+POST {{Resume.API_HostAddress}}/AddPerson/
 Accept: application/json
 
 ###
+
+POST {{Resume.API_HostAddress}}/AddJob/
+Accept: application/json
+
+###
+
+GET {{Resume.API_HostAddress}}/ListPerson/
+Accept: application/json
+
+###
+
+GET {{Resume.API_HostAddress}}/GetPersonJobBetweenDates/
+Accept: application/json
