@@ -50,7 +50,8 @@ app.MapPost("/AddJob", async (PersonDTO person, [FromServices] ISender sender) =
 /// </summary>
 app.MapGet("/GetPersonsWithJobs", async ([FromServices] ISender sender) =>
 {
-    return Results.Ok(await sender.Send(new GetPeopleQuery()));
+    var persons = await sender.Send(new GetPeopleQuery());
+    return Results.Ok(persons.Select(p => new PersonWithAge(p)).ToList());
 });
 
 /// <summary>
@@ -79,3 +80,15 @@ app.Run();
 
 record PersonJobWrapperDTO(PersonDTO Person, JobDTO job);
 record PersonJobDateWrapperDTO(string PersonName, DateTime StartDate, DateTime EndDate);
+class PersonWithAge
+{
+    public PersonWithAge(PersonDTO person)
+    {
+        Name = person.Name;
+        Age = DateTime.Now.Year - person.BirthDay.Year;
+        Jobs = person.Jobs;
+    }
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public IReadOnlyList<JobDTO> Jobs { get; set; }
+}
