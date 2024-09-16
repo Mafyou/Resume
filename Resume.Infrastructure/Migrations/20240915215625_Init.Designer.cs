@@ -11,8 +11,8 @@ using Resume.Infrastructure.Context;
 namespace Resume.Infrastructure.Migrations
 {
     [DbContext(typeof(ResumeContext))]
-    [Migration("20240913142443_AddDates")]
-    partial class AddDates
+    [Migration("20240915215625_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,10 +20,28 @@ namespace Resume.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
+            modelBuilder.Entity("Resume.Infrastructure.Models.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Companies");
+                });
+
             modelBuilder.Entity("Resume.Infrastructure.Models.Job", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CompanyId")
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime?>("EndDate")
@@ -44,6 +62,8 @@ namespace Resume.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("PersonId");
 
@@ -70,9 +90,17 @@ namespace Resume.Infrastructure.Migrations
 
             modelBuilder.Entity("Resume.Infrastructure.Models.Job", b =>
                 {
+                    b.HasOne("Resume.Infrastructure.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Resume.Infrastructure.Models.Person", null)
                         .WithMany("Jobs")
                         .HasForeignKey("PersonId");
+
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("Resume.Infrastructure.Models.Person", b =>

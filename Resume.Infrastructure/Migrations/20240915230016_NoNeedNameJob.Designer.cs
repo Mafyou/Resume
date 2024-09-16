@@ -11,8 +11,8 @@ using Resume.Infrastructure.Context;
 namespace Resume.Infrastructure.Migrations
 {
     [DbContext(typeof(ResumeContext))]
-    [Migration("20240913133702_Init")]
-    partial class Init
+    [Migration("20240915230016_NoNeedNameJob")]
+    partial class NoNeedNameJob
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -20,7 +20,7 @@ namespace Resume.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
 
-            modelBuilder.Entity("Resume.Infrastructure.Models.Job", b =>
+            modelBuilder.Entity("Resume.Data.Models.Company", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,6 +30,23 @@ namespace Resume.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.HasKey("Id");
+
+                    b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("Resume.Data.Models.Job", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("PersonId")
                         .HasColumnType("INTEGER");
 
@@ -37,14 +54,19 @@ namespace Resume.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("PersonId");
 
                     b.ToTable("Jobs");
                 });
 
-            modelBuilder.Entity("Resume.Infrastructure.Models.Person", b =>
+            modelBuilder.Entity("Resume.Data.Models.Person", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,14 +84,22 @@ namespace Resume.Infrastructure.Migrations
                     b.ToTable("Persons");
                 });
 
-            modelBuilder.Entity("Resume.Infrastructure.Models.Job", b =>
+            modelBuilder.Entity("Resume.Data.Models.Job", b =>
                 {
-                    b.HasOne("Resume.Infrastructure.Models.Person", null)
+                    b.HasOne("Resume.Data.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Resume.Data.Models.Person", null)
                         .WithMany("Jobs")
                         .HasForeignKey("PersonId");
+
+                    b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("Resume.Infrastructure.Models.Person", b =>
+            modelBuilder.Entity("Resume.Data.Models.Person", b =>
                 {
                     b.Navigation("Jobs");
                 });

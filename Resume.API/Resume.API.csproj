@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Resume.Application\Resume.Application.csproj" />
-    <ProjectReference Include="..\Resume.DTO\Resume.DTO.csproj" />
+    <ProjectReference Include="..\Resume.DTO\Resume.Data.csproj" />
     <ProjectReference Include="..\Resume.Infrastructure\Resume.Infrastructure.csproj" />
   </ItemGroup>
 

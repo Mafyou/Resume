@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resume.Infrastructure", "Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resume.UnitTests", "Resume.UnitTests\Resume.UnitTests.csproj", "{38C5C5A1-83A8-46AB-813C-E06DAF105149}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resume.DTO", "Resume.DTO\Resume.DTO.csproj", "{DAA7877E-3063-40BA-8411-95A8A0584133}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resume.Data", "Resume.DTO\Resume.Data.csproj", "{DAA7877E-3063-40BA-8411-95A8A0584133}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -4,7 +4,7 @@ public interface IRepository
 {
     bool AddPerson(Person person);
     bool AddJob(Job job, Person person);
-    Task<IReadOnlyList<Person>> GetPersonsWithJobs(Job job);
-    Task<IReadOnlyList<Person>> GetPersonsBy(Job job);
-    Task<IReadOnlyCollection<Job>> GetPersonJobBetweenDates(Person person, DateTime start, DateTime end);
+    Task<IReadOnlyList<Person>> GetPersonsWithJobs();
+    Task<IReadOnlyList<Person>> GetPersonsByCompany(Company company);
+    Task<IReadOnlyList<Job>> GetPersonJobBetweenDates(Person person, DateTime start, DateTime end);
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Resume.Infrastructure.Models;
 
 namespace Resume.Infrastructure.Respositories;
 
@@ -15,6 +14,10 @@ public class ResumeRespository : IRepository
     {
         try
         {
+            if (_context.Persons.FirstOrDefault(x => x.Name == person.Name) is not null)
+            {
+                return false;
+            }
             _context.Add(person);
             return _context.SaveChanges() > 0;
         }
@@ -28,14 +31,32 @@ public class ResumeRespository : IRepository
     {
         try
         {
-            if (_context.Jobs.Any(x => x.Id == job.Id) is false)
+            var realPerson = _context.Persons.Where(x => x.Name == person.Name);
+            if (realPerson is null || realPerson.Count() is not 1)
+            {
+                return false;
+            }
+            var personDb = realPerson.First();
+            if (job.Company is null)
+            {
+                return false;
+            }
+            if (_context.Companies.FirstOrDefault(x => x.Name == job.Company.Name) is null)
+            {
+                _context.Companies.Add(job.Company);
+                _context.SaveChanges();
+            }
+            if (_context.Jobs.FirstOrDefault(x => x.Company.Id == job.CompanyId) is null)
             {
                 _context.Jobs.Add(job);
                 _context.SaveChanges();
+                personDb.Jobs = [job];
             }
-            person.Jobs ??= [];
-            person.Jobs.Add(job);
-            _context.Persons.Update(person);
+            else
+            {
+                personDb.Jobs.Add(job);
+            }
+            _context.Persons.Update(personDb);
             _context.SaveChanges();
             return true;
         }
@@ -46,10 +67,12 @@ public class ResumeRespository : IRepository
         return false;
     }
 
-    public async Task<IReadOnlyCollection<Job>> GetPersonJobBetweenDates(Person person, DateTime start, DateTime end)
+    public async Task<IReadOnlyList<Job>> GetPersonJobBetweenDates(Person person, DateTime start, DateTime end)
     {
         return (await _context.Persons
-            .Where(p => p.Id == person.Id)
+            .Include(x => x.Jobs)
+            .ThenInclude(y => y.Company)
+            .Where(p => p.Name == person.Name)
             .SelectMany(p => p.Jobs)
             .Where(j => j.StartDate >= start && j.EndDate <= end)
             .ToListAsync())
@@ -57,19 +80,23 @@ public class ResumeRespository : IRepository
 
     }
 
-    public async Task<IReadOnlyList<Person>> GetPersonsBy(Job job)
-    {
-        return await _context.Persons.Include(y => y.Jobs)
-            .Where(p => p.Jobs.Any(j => j.Id == job.Id))
-            .Where(p => p.Jobs.Where(x => x.EndDate == null) != null)
-            .OrderBy(p => p.Name)
-            .ToListAsync();
-    }
-
-    public async Task<IReadOnlyList<Person>> GetPersonsWithJobs(Job job)
+    public async Task<IReadOnlyList<Person>> GetPersonsByCompany(Company company)
     {
         return (await _context.Persons
-            .Where(x => x.Jobs.Any(y => y.Name == job.Name))
+            .Include(y => y.Jobs)
+            .ThenInclude(z => z.Company)
+            .Where(x => x.Jobs.Any(j => j.Company.Name == company.Name))
+            .OrderBy(p => p.Name)
+            .ToListAsync())
+            .AsReadOnly();
+    }
+
+    public async Task<IReadOnlyList<Person>> GetPersonsWithJobs()
+    {
+        return (await _context.Persons
+            .Include(x => x.Jobs)
+            .ThenInclude(y => y.Company)
+            .OrderBy(p => p.Name)
             .ToListAsync())
             .AsReadOnly();
     }

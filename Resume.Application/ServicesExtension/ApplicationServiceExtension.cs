@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Resume.Application.Validators;
+using Resume.Data.DTO;
 
 namespace Resume.Application.ServicesExtension;
 

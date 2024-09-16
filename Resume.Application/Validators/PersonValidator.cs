@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Resume.Data.DTO;
 
 namespace Resume.Application.Validators;
 

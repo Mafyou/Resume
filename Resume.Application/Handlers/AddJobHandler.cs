@@ -11,18 +11,23 @@ public class AddJobHandler : IRequestHandler<AddJobCommand, bool>
     }
     public async Task<bool> Handle(AddJobCommand request, CancellationToken cancellationToken)
     {
-        var modelJob = new Job
-        {
-            Name = request.job.Name,
-            Position = request.job.Position,
-            StartDate = request.job.StartDate,
-            EndDate = request.job.EndDate
-        };
         var modelPerson = new Person
         {
             Name = request.person.Name,
             BirthDate = request.person.BirthDay
         };
-        return _repository.AddJob(modelJob, modelPerson);
+        var areAdded = new List<bool>();
+        foreach (var job in request.person.Jobs)
+        {
+            var modelJob = new Job
+            {
+                Position = job.Position,
+                StartDate = job.StartDate,
+                EndDate = job.EndDate,
+                Company = new Company { Name = job.Company.Name }
+            };
+            areAdded.Add(_repository.AddJob(modelJob, modelPerson));
+        }
+        return !areAdded.Any(x => !x);
     }
 }

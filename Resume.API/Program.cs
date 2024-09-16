@@ -1,8 +1,3 @@
-using MediatR;
-using Resume.Infrastructure.Abstractions;
-using Resume.Infrastructure.Models;
-using System;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -38,56 +33,49 @@ app.MapPost("/AddPerson", async (PersonDTO person, [FromServices] ISender sender
     if (person.BirthDay <= maxAllowedBirthDate)
         return Results.BadRequest("Trop vieux");
     var isAdded = await sender.Send(new AddPersonCommand(person));
-    return Results.Ok($"Person saved {isAdded}");
+    return isAdded ? Results.Ok("Person added") : Results.BadRequest("Person not added");
 });
 
 /// <summary>
 /// Permettent d'ajouter un emploi à une personne avec une date de début et de fin d'emploi. Pour le poste actuellement occupé, la date de fin n'est pas obligatoire. Une personne peut avoir plusieurs emplois aux dates qui se chevauchent.
 /// </summary>
-app.MapPost("/AddJob", async (PersonJobWrapperDTO wrapper, [FromServices] ISender sender) =>
+app.MapPost("/AddJob", async (PersonDTO person, [FromServices] ISender sender) =>
 {
-    var isAdded = await sender.Send(new AddJobCommand(wrapper.job, wrapper.person));
-    return Results.Ok($"Added job {isAdded}");
+    var isAdded = await sender.Send(new AddJobCommand(person));
+    return isAdded ? Results.Ok("Job added") : Results.BadRequest("Job not added");
 });
 
 /// <summary>
 /// Renvoient toutes les personnes enregistrées par ordre alphabétique, et indiquent également leur âge et leur(s) emploi(s) actuel(s).
 /// </summary>
-//app.MapGet("/GetPersonsWithJobs", (JobDTO job, [FromServices] IRepository repo) =>
-//{
-//    var model = new Job
-//    {
-//        Name = job.Name
-//    };
-//    return Results.Ok(repo.GetPersonsBy(model));
-//});
+app.MapGet("/GetPersonsWithJobs", async ([FromServices] ISender sender) =>
+{
+    return Results.Ok(await sender.Send(new GetPeopleQuery()));
+});
 
 /// <summary>
 /// Renvoient toutes les personnes ayant travaillé pour une entreprise donnée.
 /// </summary>
-app.MapPost("/GetPersonsBy", (JobDTO job, [FromServices] IRepository repo) =>
+app.MapPost("/GetPersonsByCompany", (CompanyDTO company, [FromServices] ISender sender) =>
 {
-    var model = new Job
-    {
-        Name = job.Name
-    };
-    return Results.Ok(repo.GetPersonsBy(model));
+    return Results.Ok(sender.Send(new GetPersonsByCompanyQuery(company)));
 });
 
 /// <summary>
 /// Renvoient tous les emplois d'une personne entre deux plages de dates.
 /// </summary>
-//app.MapGet("/GetPersonJobBetweenDates", (PersonJobDateWrapperDTO dto, [FromServices] IRepository repo) =>
-//{
-//    var model = new Person
-//    {
-//        Name = dto.person.Name,
-//        BirthDate = dto.person.BirthDay
-//    };
-//    return Results.Ok(repo.GetPersonJobBetweenDates(model, dto.StartDate, dto.EndDate));
-//});
+app.MapPost("/GetPersonJobBetweenDates", (PersonJobDateWrapperDTO dto, [FromServices] ISender sernder) =>
+{
+    return Results.Ok(sernder.Send(new GetPersonJobBetweenDatesQuery(dto.PersonName, dto.StartDate, dto.EndDate)));
+});
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetService<ResumeContext>();
+    dbContext?.Database.EnsureCreated();
+}
 
 app.Run();
 
-record PersonJobWrapperDTO(PersonDTO person, JobDTO job);
-record PersonJobDateWrapperDTO(PersonDTO person, DateTime StartDate, DateTime EndDate);
+record PersonJobWrapperDTO(PersonDTO Person, JobDTO job);
+record PersonJobDateWrapperDTO(string PersonName, DateTime StartDate, DateTime EndDate);
